@@ -1,0 +1,8 @@
+flask>=3.0.0
+flask-login>=0.6.3
+reportlab>=4.0.0
+google-genai>=2.4.0
+psutil>=5.9.0
+werkzeug>=3.0.0
+cryptography>=41.0.0
+pillow>=10.0.0

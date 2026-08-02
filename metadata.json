@@ -1,0 +1,6 @@
+{
+  "name": "BlueShield Auditor",
+  "description": "AI Powered Windows Security Hardening & Compliance Checker",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

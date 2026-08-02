@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ module_title }} Audit – BlueShield Auditor{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="fa-solid fa-layer-group text-primary me-2"></i>{{ module_title }} Module Inspection</h3>
+        <p class="text-muted small mb-0">Detailed controls breakdown and hardening recommendations for {{ module_title }}</p>
+    </div>
+    <div>
+        <a href="{{ url_for('scan_page') }}" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrows-rotate me-1"></i> Re-Scan Module
+        </a>
+    </div>
+</div>
+
+<!-- Findings List Card -->
+<div class="cyber-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Audited Controls ({{ findings|length }})</h5>
+        <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary active" onclick="filterModule('all')">All</button>
+            <button class="btn btn-outline-danger" onclick="filterModule('FAIL')">Failures</button>
+            <button class="btn btn-outline-warning" onclick="filterModule('WARN')">Warnings</button>
+            <button class="btn btn-outline-success" onclick="filterModule('PASS')">Passed</button>
+        </div>
+    </div>
+
+    {% if findings %}
+    <div class="d-flex flex-column gap-3">
+        {% for f in findings %}
+        <div class="p-3 rounded bg-dark border border-secondary finding-item" data-status="{{ f.status }}">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    {% if f.status == 'PASS' %}
+                    <i class="fa-solid fa-circle-check text-success fs-5"></i>
+                    {% elif f.status == 'FAIL' %}
+                    <i class="fa-solid fa-circle-xmark text-danger fs-5"></i>
+                    {% else %}
+                    <i class="fa-solid fa-triangle-exclamation text-warning fs-5"></i>
+                    {% endif %}
+                    <h6 class="fw-bold text-light mb-0">{{ f.check_name }}</h6>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge {% if f.severity == 'CRITICAL' %}bg-danger{% elif f.severity == 'HIGH' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                        {{ f.severity }}
+                    </span>
+                    <span class="badge {% if f.status == 'PASS' %}badge-secure{% elif f.status == 'FAIL' %}badge-danger{% else %}badge-warning{% endif %}">
+                        {{ f.status }}
+                    </span>
+                </div>
+            </div>
+
+            <p class="text-muted small mb-2">{{ f.description }}</p>
+
+            {% if f.recommendation %}
+            <div class="small text-info mb-2">
+                <i class="fa-solid fa-shield-halved me-1"></i><strong>Recommendation:</strong> {{ f.recommendation }}
+            </div>
+            {% endif %}
+
+            {% if f.fix_script %}
+            <div class="p-2 rounded bg-black border border-secondary mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-muted text-uppercase fw-semibold"><i class="fa-solid fa-terminal text-primary me-1"></i>PowerShell Fix Script</small>
+                    <button class="btn btn-xs btn-outline-info btn-copy-code" data-target="mod-code-{{ loop.index }}">
+                        <i class="fa-solid fa-copy me-1"></i>Copy
+                    </button>
+                </div>
+                <code id="mod-code-{{ loop.index }}" class="text-info small">{{ f.fix_script }}</code>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="fa-solid fa-circle-info display-6 mb-2"></i>
+        <p>No specific controls recorded for this module in the last scan. Run a Full Audit to populate findings.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterModule(status) {
+    document.querySelectorAll('.finding-item').forEach(item => {
+        if (status === 'all' || item.getAttribute('data-status') === status) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

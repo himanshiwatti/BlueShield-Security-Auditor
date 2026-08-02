@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BlueShield Auditor{% endblock %} – Windows Security Hardening & Compliance</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Cyber Styling -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary-blue: {{ user_accent or '#0078FF' }};
+        }
+    </style>
+</head>
+<body class="{% if user_theme == 'light' %}light-theme{% endif %}">
+
+    {% if current_user.is_authenticated %}
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-shield-halved text-primary"></i>
+            <span>BlueShield <small class="text-info fs-6">v2.4</small></span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Core Console</div>
+            <a href="{{ url_for('dashboard') }}" class="nav-link-custom {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="{{ url_for('scan_page') }}" class="nav-link-custom {% if request.endpoint == 'scan_page' %}active{% endif %}">
+                <i class="fa-solid fa-radar text-info"></i> Quick & Full Audit
+            </a>
+
+            <div class="sidebar-section-label">17 Security Modules</div>
+            <a href="{{ url_for('module_detail', module_name='defender') }}" class="nav-link-custom">
+                <i class="fa-solid fa-shield-virus text-success"></i> Windows Defender
+            </a>
+            <a href="{{ url_for('module_detail', module_name='firewall') }}" class="nav-link-custom">
+                <i class="fa-solid fa-fire text-danger"></i> Windows Firewall
+            </a>
+            <a href="{{ url_for('module_detail', module_name='bitlocker') }}" class="nav-link-custom">
+                <i class="fa-solid fa-lock text-warning"></i> BitLocker Encryption
+            </a>
+            <a href="{{ url_for('module_detail', module_name='updates') }}" class="nav-link-custom">
+                <i class="fa-solid fa-arrows-rotate text-primary"></i> Windows Update
+            </a>
+            <a href="{{ url_for('module_detail', module_name='secure-boot') }}" class="nav-link-custom">
+                <i class="fa-solid fa-microchip text-info"></i> Secure Boot & TPM
+            </a>
+            <a href="{{ url_for('module_detail', module_name='password-policy') }}" class="nav-link-custom">
+                <i class="fa-solid fa-key text-warning"></i> Password Policy
+            </a>
+            <a href="{{ url_for('module_detail', module_name='users') }}" class="nav-link-custom">
+                <i class="fa-solid fa-users text-primary"></i> User Accounts
+            </a>
+            <a href="{{ url_for('module_detail', module_name='software') }}" class="nav-link-custom">
+                <i class="fa-solid fa-laptop-code text-info"></i> Installed Software
+            </a>
+            <a href="{{ url_for('module_detail', module_name='services') }}" class="nav-link-custom">
+                <i class="fa-solid fa-gears text-secondary"></i> Windows Services
+            </a>
+            <a href="{{ url_for('module_detail', module_name='usb') }}" class="nav-link-custom">
+                <i class="fa-solid fa-usb text-success"></i> USB Security
+            </a>
+            <a href="{{ url_for('module_detail', module_name='browser') }}" class="nav-link-custom">
+                <i class="fa-solid fa-globe text-primary"></i> Browser Security
+            </a>
+
+            <div class="sidebar-section-label">Compliance & AI</div>
+            <a href="{{ url_for('compliance_page') }}" class="nav-link-custom {% if request.endpoint == 'compliance_page' %}active{% endif %}">
+                <i class="fa-solid fa-check-double text-success"></i> CIS & MS Baseline
+            </a>
+            <a href="{{ url_for('ai_assistant_page') }}" class="nav-link-custom {% if request.endpoint == 'ai_assistant_page' %}active{% endif %}">
+                <i class="fa-solid fa-brain text-info"></i> AI Assistant
+            </a>
+
+            <div class="sidebar-section-label">Reports & Logs</div>
+            <a href="{{ url_for('reports_page') }}" class="nav-link-custom {% if request.endpoint == 'reports_page' %}active{% endif %}">
+                <i class="fa-solid fa-file-pdf text-danger"></i> Reports Exporter
+            </a>
+            <a href="{{ url_for('history_page') }}" class="nav-link-custom {% if request.endpoint == 'history_page' %}active{% endif %}">
+                <i class="fa-solid fa-clock-rotate-left"></i> Scan History
+            </a>
+            <a href="{{ url_for('compare_page') }}" class="nav-link-custom {% if request.endpoint == 'compare_page' %}active{% endif %}">
+                <i class="fa-solid fa-code-compare"></i> Compare Scans
+            </a>
+
+            <div class="sidebar-section-label">System</div>
+            <a href="{{ url_for('settings_page') }}" class="nav-link-custom {% if request.endpoint == 'settings_page' %}active{% endif %}">
+                <i class="fa-solid fa-sliders"></i> Settings
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-link-custom text-danger">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-sm btn-outline-secondary d-md-none" id="btnToggleSidebar">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="text-muted small">
+                    <i class="fa-solid fa-clock me-1 text-primary"></i> <span id="liveClock">Loading...</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('scan_page') }}" class="btn btn-sm btn-primary">
+                    <i class="fa-solid fa-play me-1"></i> Quick Audit
+                </a>
+
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-user-shield text-info"></i>
+                        <span>{{ current_user.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><span class="dropdown-item-text small text-muted">{{ current_user.role }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('settings_page') }}"><i class="fa-solid fa-gear me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-sign-out me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <main class="content-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

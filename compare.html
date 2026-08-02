@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Scans – BlueShield Auditor{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="fa-solid fa-code-compare text-primary me-2"></i>Side-by-Side Scan Comparison</h3>
+        <p class="text-muted small mb-0">Evaluate security score deltas and remediated controls between two audit runs</p>
+    </div>
+</div>
+
+<!-- Scan Selection Form -->
+<div class="cyber-card mb-4">
+    <form method="GET" action="{{ url_for('compare_page') }}" class="row g-3 align-items-end">
+        <div class="col-12 col-md-5">
+            <label class="form-label text-muted small text-uppercase fw-semibold">Baseline Scan 1</label>
+            <select name="scan1" class="form-select bg-dark text-light border-secondary">
+                {% for s in scans %}
+                <option value="{{ s.id }}" {% if scan1 and scan1.id == s.id %}selected{% endif %}>
+                    Scan #{{ s.id }} – {{ s.timestamp|format_datetime }} (Score: {{ s.score }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12 col-md-5">
+            <label class="form-label text-muted small text-uppercase fw-semibold">Comparison Scan 2</label>
+            <select name="scan2" class="form-select bg-dark text-light border-secondary">
+                {% for s in scans %}
+                <option value="{{ s.id }}" {% if scan2 and scan2.id == s.id %}selected{% endif %}>
+                    Scan #{{ s.id }} – {{ s.timestamp|format_datetime }} (Score: {{ s.score }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa-solid fa-calculator me-1"></i> Compare
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Comparison Results Row -->
+{% if scan1 and scan2 %}
+<div class="row g-3">
+    <!-- Scan 1 Column -->
+    <div class="col-12 col-md-6">
+        <div class="cyber-card h-100 border-primary">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-primary mb-0">Baseline Scan #{{ scan1.id }}</h5>
+                <small class="text-muted">{{ scan1.timestamp|format_datetime }}</small>
+            </div>
+
+            <div class="p-3 rounded bg-dark border border-secondary text-center mb-3">
+                <div class="display-5 fw-bold text-primary">{{ scan1.score }} / 100</div>
+                <div class="small text-muted mb-2">Compliance: {{ scan1.compliance_score }}%</div>
+                <span class="badge {% if scan1.risk_level == 'Secure' %}badge-secure{% elif scan1.risk_level == 'Critical' or scan1.risk_level == 'High Risk' %}badge-danger{% else %}badge-warning{% endif %}">
+                    {{ scan1.risk_level }}
+                </span>
+            </div>
+
+            <ul class="list-group bg-dark mb-0">
+                <li class="list-group-item bg-dark border-secondary text-light d-flex justify-content-between">
+                    <span>Passed Checks:</span> <strong class="text-success">{{ scan1.total_passed }}</strong>
+                </li>
+                <li class="list-group-item bg-dark border-secondary text-light d-flex justify-content-between">
+                    <span>Failed Checks:</span> <strong class="text-danger">{{ scan1.total_failed }}</strong>
+                </li>
+                <li class="list-group-item bg-dark border-secondary text-light d-flex justify-content-between">
+                    <span>Warnings:</span> <strong class="text-warning">{{ scan1.total_warnings }}</strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Scan 2 Column -->
+    <div class="col-12 col-md-6">
+        <div class="cyber-card h-100 border-info">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-info mb-0">Target Scan #{{ scan2.id }}</h5>
+                <small class="text-muted">{{ scan2.timestamp|format_datetime }}</small>
+            </div>
+
+            <div class="p-3 rounded bg-dark border border-secondary text-center mb-3">
+                <div class="display-5 fw-bold text-info">{{ scan2.score }} / 100</div>
+                <div class="small text-muted mb-2">
+                    Score Delta:
+                    {% set delta = scan2.score - scan1.score %}
+                    {% if delta > 0 %}
+                    <span class="text-success fw-bold"><i class="fa-solid fa-arrow-up me-1"></i>+{{ delta }} Points Improvement</span>
+                    {% elif delta < 0 %}
+                    <span class="text-danger fw-bold"><i class="fa-solid fa-arrow-down me-1"></i>{{ delta }} Points Decline</span>
+                    {% else %}
+                    <span class="text-muted">No Score Change</span>
+                    {% endif %}
+                </div>
+                <span class="badge {% if scan2.risk_level == 'Secure' %}badge-secure{% elif scan2.risk_level == 'Critical' or scan2.risk_level == 'High Risk' %}badge-danger{% else %}badge-warning{% endif %}">
+                    {{ scan2.risk_level }}
+                </span>
+            </div>
+
+            <ul class="list-group bg-dark mb-0">
+                <li class="list-group-item bg-dark border-secondary text-light d-flex justify-content-between">
+                    <span>Passed Checks:</span> <strong class="text-success">{{ scan2.total_passed }}</strong>
+                </li>
+                <li class="list-group-item bg-dark border-secondary text-light d-flex justify-content-between">
+                    <span>Failed Checks:</span> <strong class="text-danger">{{ scan2.total_failed }}</strong>
+                </li>
+                <li class="list-group-item bg-dark border-secondary text-light d-flex justify-content-between">
+                    <span>Warnings:</span> <strong class="text-warning">{{ scan2.total_warnings }}</strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

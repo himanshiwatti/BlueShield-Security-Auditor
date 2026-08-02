@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard – BlueShield Auditor{% endblock %}
+
+{% block content %}
+<!-- Header Bar -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="fa-solid fa-shield-halved text-primary me-2"></i>Security Audit Console</h3>
+        <p class="text-muted small mb-0">Local Host System Hardening, Posture Evaluation & Compliance</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('scan_page') }}" class="btn btn-primary">
+            <i class="fa-solid fa-arrows-rotate me-2"></i>Run New Full Scan
+        </a>
+        {% if scan %}
+            <a href="{{ url_for('export_report', format_type='pdf', scan_id=scan.id) }}" class="btn btn-outline-danger">
+                <i class="fa-solid fa-file-pdf me-2"></i>Export PDF
+            </a>
+        {% else %}
+            <button class="btn btn-outline-secondary" disabled>Run Scan First</button>
+        {% endif %}
+    </div>
+</div>
+
+{% if scan %}
+<!-- Top Metrics Cards Row -->
+<div class="row g-3 mb-4">
+    <!-- Security Score Gauge Card -->
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="cyber-card text-center h-100 d-flex flex-column justify-content-between">
+            <div class="card-title-custom">Security Score</div>
+            <div class="gauge-container my-2">
+                <canvas id="gaugeCanvas"></canvas>
+                <div class="gauge-score">
+                    <div class="num">{{ scan.score }}</div>
+                    <div class="label">/ 100</div>
+                </div>
+            </div>
+            <div>
+                <span class="badge {% if scan.risk_level == 'Secure' %}badge-secure{% elif scan.risk_level == 'Critical' or scan.risk_level == 'High Risk' %}badge-danger{% else %}badge-warning{% endif %} px-3 py-2 fs-6">
+                    <i class="fa-solid fa-shield me-1"></i> {{ scan.risk_level }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Score Card -->
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="cyber-card h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="card-title-custom">Compliance Benchmark</div>
+                <div class="stat-value text-success mb-2">{{ scan.compliance_score }}%</div>
+                <p class="text-muted small mb-3">MS Security Baseline & CIS Level 1</p>
+            </div>
+            <div class="progress bg-dark mb-2" style="height: 10px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ scan.compliance_score }}%;"></div>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+                <span>Passed: {{ scan.total_passed }}</span>
+                <span>Failed: {{ scan.total_failed }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Statistics Breakdown -->
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="cyber-card h-100 d-flex flex-column justify-content-between">
+            <div class="card-title-custom">Audit Controls Audit</div>
+            <div class="d-flex flex-column gap-2 my-auto">
+                <div class="d-flex justify-content-between align-items-center p-2 rounded bg-dark border border-secondary">
+                    <span class="small text-muted"><i class="fa-solid fa-circle-check text-success me-2"></i>Passed Checks</span>
+                    <span class="badge bg-success fs-6">{{ scan.total_passed }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 rounded bg-dark border border-secondary">
+                    <span class="small text-muted"><i class="fa-solid fa-circle-xmark text-danger me-2"></i>Failed Checks</span>
+                    <span class="badge bg-danger fs-6">{{ scan.total_failed }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 rounded bg-dark border-secondary">
+                    <span class="small text-muted"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>Warnings</span>
+                    <span class="badge bg-warning text-dark fs-6">{{ scan.total_warnings }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan Metadata -->
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="cyber-card h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="card-title-custom">Inspection Metadata</div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Last Scan Completed</small>
+                    <span class="fw-semibold text-light">{{ scan.timestamp|format_datetime }}</span>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Scan Execution Duration</small>
+                    <span class="fw-semibold text-info"><i class="fa-solid fa-stopwatch me-1"></i> {{ scan.duration_seconds }} seconds</span>
+                </div>
+            </div>
+            <a href="{{ url_for('history_page') }}" class="btn btn-sm btn-outline-info w-100">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> View Scan History
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Baaki saara Charts + AI + Table code yahi rahega -->
+<!-- Charts & AI Security Assessment Row -->
+<div class="row g-3 mb-4"> ... </div>
+<div class="row g-3 mb-4"> ... </div>
+<div class="row g-3"> ... </div>
+
+{% else %}
+<!-- Jab scan nahi hai tab ye dikhega -->
+<div class="cyber-card text-center p-5">
+    <i class="fa-solid fa-shield-halved fa-3x text-muted mb-3"></i>
+    <h4>No Scan Data Yet</h4>
+    <p class="text-muted">Click "Run New Full Scan" to start your first security audit.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    {% if scan %}
+    // Render Circular Score Gauge
+    renderGaugeChart('gaugeCanvas', {{ scan.score }});
+
+    // Render Trend Chart
+    const trendLabels = [{% for s in recent_scans[::-1] %}"{{ s.timestamp[:10] }}",{% endfor %}];
+    const scoreData = [{% for s in recent_scans[::-1] %}{{ s.score }},{% endfor %}];
+    const complianceData = [{% for s in recent_scans[::-1] %}{{ s.compliance_score }},{% endfor %}];
+    renderTrendChart('trendChart', trendLabels, scoreData, complianceData);
+
+    // Render Risk Distribution Chart
+    renderRiskDistributionChart('riskDistributionChart', {{ scan.total_passed }}, {{ scan.total_failed }}, {{ scan.total_warnings }});
+    {% endif %}
+</script>
+{% endblock %}

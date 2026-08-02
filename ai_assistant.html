@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}AI Security Assistant – BlueShield Auditor{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="cyber-card" style="border-left: 4px solid var(--cyber-cyan);">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary pb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 rounded bg-dark border border-secondary text-info fs-3">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">Google Gemini AI Security Advisor</h4>
+                        <small class="text-muted">Powered by gemini-3.1-pro-preview with High Reasoning Level</small>
+                    </div>
+                </div>
+                <span class="badge badge-cyan px-3 py-2"><i class="fa-solid fa-circle text-success me-1"></i> Active Session</span>
+            </div>
+
+            <!-- Chat Message Window -->
+            <div class="p-3 rounded bg-dark border border-secondary mb-3" id="aiChatBox" style="min-height: 380px; max-height: 480px; overflow-y: auto;">
+                <div class="d-flex gap-3 mb-3">
+                    <div class="text-info fs-4"><i class="fa-solid fa-robot"></i></div>
+                    <div class="p-3 rounded bg-black border border-secondary text-light w-100">
+                        <strong>BlueShield AI Assistant:</strong>
+                        <p class="mb-0 mt-1 small">Hello Analyst! I have loaded your system's recent audit profile (Security Score: {{ scan.score }}/100, {{ scan.total_failed }} failed controls). Ask me any question regarding Windows security hardening, PowerShell remediation scripts, or Group Policy configuration.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input Form -->
+            <form id="aiChatForm" class="d-flex gap-2">
+                <input type="text" id="aiQueryInput" class="form-control bg-dark text-light border-secondary" placeholder="Ask Gemini AI for security advice or PowerShell fix script..." required>
+                <button type="submit" class="btn btn-primary px-4 text-nowrap" id="btnSendAi">
+                    <i class="fa-solid fa-paper-plane me-1"></i> Ask AI
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chatForm = document.getElementById('aiChatForm');
+    const inputEl = document.getElementById('aiQueryInput');
+    const chatBox = document.getElementById('aiChatBox');
+    const sendBtn = document.getElementById('btnSendAi');
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = inputEl.value.trim();
+        if (!query) return;
+
+        // Append user prompt
+        chatBox.innerHTML += `
+            <div class="d-flex gap-3 mb-3 justify-content-end">
+                <div class="p-3 rounded bg-primary text-white" style="max-width: 80%;">
+                    <strong>You:</strong>
+                    <p class="mb-0 mt-1 small">${query}</p>
+                </div>
+                <div class="text-primary fs-4"><i class="fa-solid fa-user-gear"></i></div>
+            </div>
+        `;
+        inputEl.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Append AI loading placeholder
+        const loadingId = 'ai-load-' + Date.now();
+        chatBox.innerHTML += `
+            <div class="d-flex gap-3 mb-3" id="${loadingId}">
+                <div class="text-info fs-4"><i class="fa-solid fa-robot"></i></div>
+                <div class="p-3 rounded bg-black border border-secondary text-light w-100">
+                    <span class="spinner-border spinner-border-sm text-info me-2"></span>
+                    <span class="small text-muted">Gemini reasoning engine analyzing query...</span>
+                </div>
+            </div>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+        sendBtn.disabled = true;
+
+        fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const loadEl = document.getElementById(loadingId);
+            if (loadEl) loadEl.remove();
+
+            // Convert basic newlines to br
+            const formattedReply = data.response.replace(/\n/g, '<br>');
+
+            chatBox.innerHTML += `
+                <div class="d-flex gap-3 mb-3">
+                    <div class="text-info fs-4"><i class="fa-solid fa-robot"></i></div>
+                    <div class="p-3 rounded bg-black border border-secondary text-light w-100">
+                        <strong>BlueShield AI Assistant:</strong>
+                        <div class="mb-0 mt-1 small">${formattedReply}</div>
+                    </div>
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            sendBtn.disabled = false;
+        })
+        .catch(err => {
+            const loadEl = document.getElementById(loadingId);
+            if (loadEl) loadEl.remove();
+            showToast('AI Error', 'Failed to connect to Gemini AI API', 'danger');
+            sendBtn.disabled = false;
+        });
+    });
+});
+</script>
+{% endblock %}

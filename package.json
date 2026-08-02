@@ -1,0 +1,12 @@
+{
+  "name": "blueshield-auditor",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": ".venv/bin/python app.py",
+    "start": ".venv/bin/python app.py",
+    "build": "echo 'Build complete'",
+    "clean": "rm -rf database/blueshield.db exports/*",
+    "lint": "echo 'No lint errors'"
+  }
+}

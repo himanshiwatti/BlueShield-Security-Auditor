@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Compliance Checker – BlueShield Auditor{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="fa-solid fa-check-double text-success me-2"></i>Compliance & Hardening Benchmarks</h3>
+        <p class="text-muted small mb-0">Evaluation against Microsoft Security Baseline and CIS Windows Recommendations</p>
+    </div>
+    <div>
+        <span class="badge badge-secure fs-6 px-3 py-2">
+            Overall Compliance: {{ scan.compliance_score }}%
+        </span>
+    </div>
+</div>
+
+<!-- Benchmarks Accordion -->
+<div class="row g-4">
+    {% for bench_key, bench_list in benchmarks.items() %}
+    <div class="col-12 col-lg-6">
+        <div class="cyber-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-primary">
+                    <i class="fa-solid fa-file-shield me-2"></i>{{ bench_key.replace('_', ' ') }}
+                </h5>
+                <span class="badge bg-dark border border-secondary text-info">{{ bench_list|length }} Controls</span>
+            </div>
+
+            <div class="list-group bg-dark">
+                {% for item in bench_list %}
+                <div class="list-group-item bg-dark border-secondary text-light p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                            <span class="badge bg-secondary me-2">{{ item.id }}</span>
+                            <strong class="text-light">{{ item.name }}</strong>
+                        </div>
+                        <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Compliant</span>
+                    </div>
+                    <div class="small text-muted">
+                        Category: <span class="text-info">{{ item.category }}</span> | Module: <span class="text-light">{{ item.module }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

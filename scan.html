@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Execute Audit Scan – BlueShield Auditor{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="cyber-card mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1"><i class="fa-solid fa-radar text-info me-2"></i>Local System Security Inspection Console</h4>
+                    <p class="text-muted small mb-0">Execute real-time Windows security controls audit & threat posture assessment</p>
+                </div>
+                <span class="badge badge-cyan px-3 py-2"><i class="fa-solid fa-desktop me-1"></i> Local Host Audit Only</span>
+            </div>
+
+            <!-- Scan Type Selection Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <div class="p-3 rounded bg-dark border border-secondary text-center h-100 cursor-pointer" onclick="startAuditScan('quick')">
+                        <i class="fa-solid fa-bolt display-6 text-warning mb-2"></i>
+                        <h5 class="fw-bold text-light mb-1">Quick Security Audit</h5>
+                        <p class="text-muted small mb-3">Inspects Windows Defender, Firewall, BitLocker, Updates, and Critical Services.</p>
+                        <button class="btn btn-sm btn-outline-warning w-100">Launch Quick Scan (~5s)</button>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="p-3 rounded bg-dark border border-secondary text-center h-100 cursor-pointer" onclick="startAuditScan('full')">
+                        <i class="fa-solid fa-shield-virus display-6 text-primary mb-2"></i>
+                        <h5 class="fw-bold text-light mb-1">Comprehensive Full Audit</h5>
+                        <p class="text-muted small mb-3">Complete 17-module inspection across all hardware, policies, software, and event logs.</p>
+                        <button class="btn btn-sm btn-primary w-100" id="btnStartScan" onclick="startAuditScan('full')">Launch Full Audit (~10s)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scan Progress Bar -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Audit Execution Progress</span>
+                    <span id="scanStatusText">Ready</span>
+                </div>
+                <div class="progress bg-dark" style="height: 12px;">
+                    <div id="scanProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Terminal Output Log -->
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted text-uppercase fw-semibold"><i class="fa-solid fa-terminal me-1"></i>Audit Execution Log</small>
+                    <small class="text-info">Real-time Stream</small>
+                </div>
+                <div class="terminal-window" id="scanTerminal">
+                    <div class="terminal-line text-muted">[System] BlueShield Auditor Engine ready. Click 'Launch Full Audit' to begin...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

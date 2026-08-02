@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Settings – BlueShield Auditor{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="cyber-card">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-sliders text-primary me-2"></i>Application Settings & Preferences</h4>
+
+            <form method="POST" action="{{ url_for('settings_page') }}">
+                <!-- Visual Theme -->
+                <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">Dashboard Color Theme</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="theme" id="themeDark" value="dark" {% if settings and settings.theme == 'dark' %}checked{% endif %}>
+                            <label class="form-check-label text-light" for="themeDark"><i class="fa-solid fa-moon me-1 text-primary"></i> Cybersecurity Dark Mode</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light" {% if settings and settings.theme == 'light' %}checked{% endif %}>
+                            <label class="form-check-label text-light" for="themeLight"><i class="fa-solid fa-sun me-1 text-warning"></i> Enterprise Light Mode</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accent Color -->
+                <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">Primary Accent Color</label>
+                    <div class="d-flex gap-3 align-items-center">
+                        <input type="color" name="accent_color" class="form-control form-control-color bg-dark border-secondary" value="{{ settings.accent_color if settings else '#0078FF' }}">
+                        <span class="text-muted small">Choose primary color for buttons and active sidebar highlights.</span>
+                    </div>
+                </div>
+
+                <!-- Language -->
+                <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">Interface Language</label>
+                    <select name="language" class="form-select bg-dark text-light border-secondary">
+                        <option value="en" {% if settings and settings.language == 'en' %}selected{% endif %}>English (US)</option>
+                        <option value="es" {% if settings and settings.language == 'es' %}selected{% endif %}>Spanish (Español)</option>
+                        <option value="de" {% if settings and settings.language == 'de' %}selected{% endif %}>German (Deutsch)</option>
+                        <option value="fr" {% if settings and settings.language == 'fr' %}selected{% endif %}>French (Français)</option>
+                        <option value="hi" {% if settings and settings.language == 'hi' %}selected{% endif %}>Hindi (हिन्दी)</option>
+                    </select>
+                </div>
+
+                <!-- Auto Scan Schedule -->
+                <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">Automatic Security Scan Schedule</label>
+                    <select name="auto_scan" class="form-select bg-dark text-light border-secondary">
+                        <option value="disabled" {% if settings and settings.auto_scan == 'disabled' %}selected{% endif %}>Disabled (Manual Scans Only)</option>
+                        <option value="daily" {% if settings and settings.auto_scan == 'daily' %}selected{% endif %}>Daily Automatic Inspection</option>
+                        <option value="weekly" {% if settings and settings.auto_scan == 'weekly' %}selected{% endif %}>Weekly Hardening Check</option>
+                    </select>
+                </div>
+
+                <!-- Notification Alerts -->
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="notifications" id="notifCheck" {% if settings and settings.notifications_enabled %}checked{% endif %}>
+                        <label class="form-check-label text-light" for="notifCheck">Enable Real-Time Toast Notifications for Critical Failures</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>Save Preferences
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
